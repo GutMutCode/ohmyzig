@@ -22,6 +22,10 @@ void ShowScrollableText(const char* title, const char* body);
 // Sets the main window's read-only text area content (multiline).
 void SetMainText(const char* body);
 
+// Populates a combo box with model options from a newline-separated list.
+// If the list is empty, clears the options.
+void SetModelOptions(const char* newline_list);
+
 // Prompts the user for the OpenAI API key using a simple modal input window.
 // Writes a null-terminated string into out_buf (up to out_buf_len-1 chars).
 // out_save receives 1 if user checked "Save key (encrypted)", else 0.

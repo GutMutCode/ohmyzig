@@ -15,10 +15,15 @@ static const char WINDOW_TITLE[] = "Zig + C Win32 Window";
 
 // Control IDs
 #define IDC_BTN_UPDATE      2001
+#define IDC_BTN_SEND        2002
+#define IDC_MODEL_COMBO     2003
+#define IDC_INPUT_EDIT      3000
 #define IDC_TEXTVIEW_EDIT   3001
 #define IDC_MAIN_EDIT       3002
 
 static HWND g_main_edit = NULL;
+static HWND g_input_edit = NULL;
+static HWND g_model_combo = NULL;
 
 // Helper: format and show last-error details
 static void ShowLastErrorA(const char* title_prefix);
@@ -30,10 +35,27 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     switch (msg) {
         case WM_CREATE: {
             HINSTANCE hi = ((LPCREATESTRUCTA)lParam)->hInstance;
+            // Model selection combo
+            g_model_combo = CreateWindowExA(0, "COMBOBOX", "",
+                                           WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
+                                           10, 10, 300, 300,
+                                           hwnd, (HMENU)(INT_PTR)IDC_MODEL_COMBO,
+                                           hi, NULL);
+
             CreateWindowExA(0, "BUTTON", "Update Model List",
                             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                            10, 40, 180, 28,
+                            320, 10, 180, 28,
                             hwnd, (HMENU)(INT_PTR)IDC_BTN_UPDATE,
+                            hi, NULL);
+            // Chat input + Send button
+            g_input_edit = CreateWindowExA(WS_EX_CLIENTEDGE, "EDIT", "",
+                                           WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
+                                           200, 44, 490, 24,
+                                           hwnd, (HMENU)(INT_PTR)IDC_INPUT_EDIT, hi, NULL);
+            CreateWindowExA(0, "BUTTON", "Send",
+                            WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+                            695, 44, 80, 28,
+                            hwnd, (HMENU)(INT_PTR)IDC_BTN_SEND,
                             hi, NULL);
             // Multiline read-only text area to show model list
             g_main_edit = CreateWindowExA(WS_EX_CLIENTEDGE, "EDIT", "",
@@ -53,6 +75,26 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 OnShowModelsRequest();
                 return 0;
             }
+            if (id == IDC_BTN_SEND) {
+                char buf[2048];
+                if (g_input_edit) {
+                    GetWindowTextA(g_input_edit, buf, (int)sizeof(buf));
+                    if (buf[0] != '\0') {
+                        char model_buf[256] = {0};
+                        if (g_model_combo) {
+                            LRESULT sel = SendMessageA(g_model_combo, CB_GETCURSEL, 0, 0);
+                            if (sel != CB_ERR) {
+                                SendMessageA(g_model_combo, CB_GETLBTEXT, (WPARAM)sel, (LPARAM)model_buf);
+                            }
+                        }
+                        if (model_buf[0] != '\0')
+                            OnSendChatRequestWithModel(buf, model_buf);
+                        else
+                            OnSendChatRequest(buf);
+                    }
+                }
+                return 0;
+            }
             break;
         }
         case WM_SIZE: {
@@ -62,14 +104,27 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             if (g_main_edit) {
                 MoveWindow(g_main_edit, 10, 80, w - 20, (h - 90), TRUE);
             }
+            if (g_input_edit) {
+                int send_w = 80;
+                int margin = 10;
+                int input_x = 200;
+                int input_w = w - input_x - margin - send_w - margin;
+                if (input_w < 120) input_w = 120;
+                MoveWindow(g_input_edit, input_x, 44, input_w, 24, TRUE);
+                HWND hSend = GetDlgItem(hwnd, IDC_BTN_SEND);
+                if (hSend) MoveWindow(hSend, input_x + input_w + margin, 44, send_w, 28, TRUE);
+            }
+            if (g_model_combo) {
+                MoveWindow(g_model_combo, 10, 10, 300, 300, TRUE);
+                HWND hUpdate = GetDlgItem(hwnd, IDC_BTN_UPDATE);
+                if (hUpdate) MoveWindow(hUpdate, 320, 10, 180, 28, TRUE);
+            }
             return 0;
         }
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
             FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW+1));
-            const char* text = "Hello, Zig + C World!";
-            TextOutA(hdc, 10, 10, text, (int)strlen(text));
             EndPaint(hwnd, &ps);
             return 0;
         }
@@ -155,6 +210,51 @@ void SetMainText(const char* body) {
     } else {
         // Fallback if not ready
         MessageBoxA(NULL, body ? body : "", "Models", MB_OK | MB_ICONINFORMATION);
+    }
+}
+
+void SetModelOptions(const char* newline_list) {
+    if (!g_model_combo) return;
+    SendMessageA(g_model_combo, CB_RESETCONTENT, 0, 0);
+    if (!newline_list || !newline_list[0]) return;
+    const char* p = newline_list;
+    const char* line = p;
+    char item[256];
+    while (*p) {
+        if (*p == '\n') {
+            size_t len = (size_t)(p - line);
+            if (len > 0) {
+                // Trim trailing CR
+                if (line[len - 1] == '\r') len -= 1;
+                if (len > 0) {
+                    size_t cpy = len < sizeof(item) - 1 ? len : sizeof(item) - 1;
+                    memcpy(item, line, cpy);
+                    item[cpy] = '\0';
+                    SendMessageA(g_model_combo, CB_ADDSTRING, 0, (LPARAM)item);
+                }
+            }
+            p += 1;
+            line = p;
+        } else {
+            p += 1;
+        }
+    }
+    // Last line (no trailing newline)
+    if (p != line) {
+        size_t len = (size_t)(p - line);
+        if (len > 0) {
+            if (line[len - 1] == '\r') len -= 1;
+            if (len > 0) {
+                size_t cpy = len < sizeof(item) - 1 ? len : sizeof(item) - 1;
+                memcpy(item, line, cpy);
+                item[cpy] = '\0';
+                SendMessageA(g_model_combo, CB_ADDSTRING, 0, (LPARAM)item);
+            }
+        }
+    }
+    // Select first item if any
+    if (SendMessageA(g_model_combo, CB_GETCOUNT, 0, 0) > 0) {
+        SendMessageA(g_model_combo, CB_SETCURSEL, 0, 0);
     }
 }
 

@@ -53,10 +53,10 @@ pub fn showAvailableModelsWithWin32(allocator: std.mem.Allocator) void {
     defer allocator.free(header);
 
     const body = http.get(allocator, "https://api.openai.com/v1/models", header) catch |e| {
-        // Try fallback to cached list
+        // Try fallback to cached list: just refresh the combo box silently
         if (loadModelsCache(allocator) catch null) |cached| {
             defer allocator.free(cached);
-            ui.showScrollableText(allocator, "Available OpenAI Models (cached)", cached);
+            ui.setModelOptions(allocator, cached);
             return;
         }
         var buf: [128]u8 = undefined;
@@ -103,11 +103,11 @@ pub fn showAvailableModelsWithWin32(allocator: std.mem.Allocator) void {
         defer allocator.free(crlf_text);
         // Save cache for offline viewing
         saveModelsCache(allocator, crlf_text) catch {};
-        // Update main window area
-        ui.setMainText(allocator, crlf_text);
+        // Populate model selector with LF list only
+        ui.setModelOptions(allocator, list_buf.items);
     } else {
-        // Fallback: update with LF text
-        ui.setMainText(allocator, list_buf.items);
+        // Fallback: populate selector with LF text
+        ui.setModelOptions(allocator, list_buf.items);
     }
 }
 
@@ -115,7 +115,8 @@ pub fn showAvailableModelsWithWin32(allocator: std.mem.Allocator) void {
 pub fn showModelsOfflineFirst(allocator: std.mem.Allocator) void {
     if (loadModelsCache(allocator) catch null) |cached| {
         defer allocator.free(cached);
-        ui.setMainText(allocator, cached);
+        // Only update the model selector; do not display the list in the main area
+        ui.setModelOptions(allocator, cached);
         return;
     }
     // No cache; fetch online (this will also save cache on success)

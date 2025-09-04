@@ -27,6 +27,12 @@ pub fn setMainText(allocator: std.mem.Allocator, body: []const u8) void {
     c.SetMainText(b.ptr);
 }
 
+pub fn setModelOptions(allocator: std.mem.Allocator, list_newline: []const u8) void {
+    const s = cstr.toCString(allocator, list_newline) catch return;
+    defer allocator.free(s);
+    c.SetModelOptions(s.ptr);
+}
+
 pub fn promptApiKey(allocator: std.mem.Allocator, out_save: *bool) ?[]u8 {
     var buf: [256]u8 = undefined;
     var save_flag: c_int = 0;
