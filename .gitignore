@@ -35,3 +35,6 @@ Desktop.ini
 *.swp
 *~
 
+# Secrets / environment files
+.env
+.env.*

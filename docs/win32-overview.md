@@ -6,7 +6,7 @@ This document explains how the current codebase creates and runs a basic Win32 G
 Call Flow
 ---------
 - `src/main.zig` calls `c.CreateSimpleWindow()` (imported via `@cImport`).
-- `src/win32_ui.c` registers a window class, creates a window, shows it, and runs the message loop.
+- `src/platform/win32/win32_ui.c` registers a window class, creates a window, shows it, and runs the message loop.
 - `WndProc` handles messages such as `WM_PAINT` and `WM_DESTROY`.
 
 Subsystem
@@ -19,14 +19,14 @@ Window Class Registration
 - Code uses the ANSI variant explicitly: `WNDCLASSEXA` + `RegisterClassExA`.
   - Fields set: `style`, `lpfnWndProc`, `hInstance`, `hIcon`, `hCursor`, `hbrBackground`, `lpszClassName`, `hIconSm`.
   - Background brush is set to `COLOR_WINDOW + 1` for a standard white background.
-- Why ANSI explicit? It avoids surprises when `UNICODE` is (or isn’t) defined, making the build deterministic across environments.
+- Why ANSI explicit? It avoids surprises when `UNICODE` is (or isn't) defined, making the build deterministic across environments.
 - Mismatch gotcha: Using `WNDCLASSEX`/`RegisterClassEx` is correct; using `WNDCLASSEX` with `RegisterClass` (older API) can fail.
 
 Creating the Window
 -------------------
 - Uses `CreateWindowExA` with:
-  - Class name: the one registered above (`"SampleWindowClass"`).
-  - Title: `"Zig + C Win32 Window"`.
+  - Class name: the one registered above (e.g., `"SampleWindowClass"`).
+  - Title: e.g., `"Zig + C Win32 Window"`.
   - Style: `WS_OVERLAPPEDWINDOW` (resizable, with caption and system menu).
   - Size/pos: `CW_USEDEFAULT` for position, `800x600` for size.
 - On failure, calls a helper `ShowLastErrorA` which shows a `MessageBoxA` with `GetLastError()` code.
@@ -67,7 +67,7 @@ ANSI vs UNICODE
 ---------------
 - This project pins to the `A` (ANSI) API variants (`RegisterClassExA`, `CreateWindowExA`, `TextOutA`, etc.).
 - To switch to wide-character APIs:
-  - Use `WNDCLASSEXW`, `RegisterClassExW`, `CreateWindowExW`, `TextOutW`, wide string literals (L"..."), and `wcslen`.
+  - Use `WNDCLASSEXW`, `RegisterClassExW`, `CreateWindowExW`, `TextOutW`, wide string literals (`L"..."`), and `wcslen`.
   - Ensure your text data is `wchar_t*` and linked fonts support the characters you plan to render.
 
 Linked Libraries

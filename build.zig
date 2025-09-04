@@ -27,15 +27,26 @@ pub fn build(b: *std.Build) void {
 
     // Compile our C sources alongside Zig and pass include flag for C as well
     exe.addCSourceFiles(.{
-        .files = &.{ "src/c_functions.c", "src/win32_ui.c" },
-        .flags = &.{ "-Iinc" },
+        .files = &.{
+            "src/libc/c_functions.c",
+            "src/platform/win32/win32_ui.c",
+        },
+        .flags = &.{"-Iinc"},
     });
 
     // Link C runtime (printf in c_functions.c) and Win32 system libraries
     exe.linkLibC();
     exe.linkSystemLibrary("user32"); // Window creation, message loop, etc.
-    exe.linkSystemLibrary("gdi32");  // Basic text drawing (TextOut)
+    exe.linkSystemLibrary("gdi32"); // Basic text drawing (TextOut)
     // exe.linkSystemLibrary("kernel32"); // Not required explicitly here
+
+    // Optional named Zig modules to make future imports cleaner
+    const openai_mod = b.addModule("openai", .{
+        .root_source_file = b.path("src/openai/mod.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.root_module.addImport("openai", openai_mod);
 
     // Build as a GUI subsystem app so no console is attached
     exe.subsystem = .Windows;
@@ -48,4 +59,3 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the application");
     run_step.dependOn(&run_exe.step);
 }
-

@@ -8,7 +8,10 @@
 #include <windows.h>
 #include <string.h>
 
-// 윈도우 프로시져: 윈도우에서 발생하는 이벤트(메시지)를 처리하는 함수
+// Window text constants
+static const char WINDOW_CLASS[] = "SampleWindowClass";
+static const char WINDOW_TITLE[] = "Zig + C Win32 Window";
+
 // Basic window procedure: handles paint and quit.
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -38,7 +41,6 @@ static void ShowLastErrorA(const char* title_prefix) {
 
 int CreateSimpleWindow(void) {
     HINSTANCE hInstance = (HINSTANCE)GetModuleHandleA(NULL);
-    const char CLASS_NAME[] = "SampleWindowClass";
 
     WNDCLASSEXA wc = {0};
     wc.cbSize        = sizeof(WNDCLASSEXA);
@@ -51,7 +53,7 @@ int CreateSimpleWindow(void) {
     wc.hCursor       = LoadCursorA(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName  = NULL;
-    wc.lpszClassName = CLASS_NAME;
+    wc.lpszClassName = WINDOW_CLASS;
     wc.hIconSm       = LoadIconA(NULL, IDI_APPLICATION);
 
     if (!RegisterClassExA(&wc)) {
@@ -61,8 +63,8 @@ int CreateSimpleWindow(void) {
 
     HWND hwnd = CreateWindowExA(
         0,
-        CLASS_NAME,
-        "Zig + C Win32 Window",
+        WINDOW_CLASS,
+        WINDOW_TITLE,
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
         NULL,
@@ -79,7 +81,6 @@ int CreateSimpleWindow(void) {
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
 
-    // 메시지 루프
     MSG msg;
     while (GetMessageA(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
