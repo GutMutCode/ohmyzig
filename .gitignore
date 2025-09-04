@@ -1,0 +1,37 @@
+# Zig build outputs and cache
+zig-out/
+.zig-cache/
+zig-cache/
+
+# Compiled binaries and debug artifacts
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.map
+
+# Object files
+*.o
+*.obj
+*.out
+*.a
+
+# Logs
+*.log
+
+# Editor/IDE settings
+.vscode/
+.idea/
+*.code-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Misc
+*.swp
+*~
+
