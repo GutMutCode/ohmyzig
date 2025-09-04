@@ -38,3 +38,10 @@ Link Errors
   - Add `exe.linkSystemLibrary("user32")` and/or `exe.linkSystemLibrary("gdi32")` in `build.zig`.
 - C runtime calls (like `printf`) require `exe.linkLibC()`.
 
+API Key Issues
+--------------
+- The app loads API keys in this order:
+  - `OPENAI_API_KEY` environment variable
+  - Encrypted file `%APPDATA%\ohmyzig\openai.key` (DPAPI)
+  - Prompt (with “Save key (encrypted)” option)
+- To reset a stored key, delete `%APPDATA%\ohmyzig\openai.key` and restart.

@@ -5,7 +5,7 @@ The OpenAI helpers live under `src/openai/` and are exposed via the named module
 
 Setup
 -----
-- API Key: set `OPENAI_API_KEY` in your environment (e.g., `.env`).
+- API Key: either set `OPENAI_API_KEY` in your environment, or rely on the app’s encrypted key storage (prompt + “Save key (encrypted)”).
 - Optional: set `OPENAI_MODEL` (defaults to `gpt-3.5-turbo`).
 
 Usage

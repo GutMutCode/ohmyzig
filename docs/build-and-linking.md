@@ -10,11 +10,17 @@ Zig Build Script (`build.zig`)
 - Root module: `src/main.zig`.
 - Executable name: `ohmyzig`.
 - Include path: `exe.addIncludePath(b.path("inc"))` exposes headers to Zig's C importer and to C compilation.
-- C sources: `exe.addCSourceFiles(.{ .files = &.{ "src/libc/c_functions.c", "src/platform/win32/win32_ui.c" }, .flags = &.{ "-Iinc" }, });`
+- C sources:
+  - `src/libc/c_functions.c`
+  - `src/platform/win32/win32_ui.c`
+  - `src/platform/win32/win_http.c`
+  - `src/platform/win32/win_secret.c`
 - Linking:
   - `exe.linkLibC();` — for `printf` used in `c_functions.c`.
   - `exe.linkSystemLibrary("user32");` — Core Win32 UI APIs.
   - `exe.linkSystemLibrary("gdi32");` — GDI text output (`TextOutA`).
+  - `exe.linkSystemLibrary("wininet");` — WinINet HTTP.
+  - `exe.linkSystemLibrary("crypt32");` — DPAPI encryption.
 - Subsystem:
   - `exe.subsystem = .Windows;` — Builds a GUI app (no console attached).
   - For debugging printouts, temporarily switch to `.Console`.
@@ -24,14 +30,14 @@ Zig Build Script (`build.zig`)
 
 Zig ↔ C Interop
 ---------------
-- Zig imports C headers via `@cImport` in `src/main.zig`, exposing functions under the `c` namespace.
-- Headers `inc/*.h` use `extern "C"` guards to avoid C++ name mangling if compiled in a C++ context.
+- Zig adapters import C headers via `@cImport` in `src/platform/*.zig`.
+- Adapters expose Zig-friendly APIs to features, hiding Win32 details.
 - C files are compiled by Zig's build system and linked into the final executable.
 
 Named Zig Modules
 -----------------
 - The build registers a named module `openai` for API helpers:
-  - Registration in `build.zig` (simplified):
+  - Registration in `build.zig`:
     - `const openai_mod = b.addModule("openai", .{ .root_source_file = b.path("src/openai/mod.zig"), ... });`
     - `exe.root_module.addImport("openai", openai_mod);`
   - Usage from Zig: `const openai = @import("openai");`

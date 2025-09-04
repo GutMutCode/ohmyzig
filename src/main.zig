@@ -2,6 +2,8 @@
 //! - Demonstrates calling C functions from Zig using @cImport
 //! - Shows a simple Win32 window via a C helper implementation
 const std = @import("std");
+const models_feature = @import("features/model_list.zig");
+const ui = @import("platform/ui.zig");
 
 // Import C headers so their functions are available as `c.*` in Zig.
 // c_functions.h: simple arithmetic example (uses libc printf)
@@ -12,6 +14,11 @@ const c = @cImport({
 });
 
 pub fn main() anyerror!void {
-    // Create a simple Win32 window via C and run the message loop.
-    _ = c.CreateSimpleWindow();
+    // Start the Win32 UI and run the message loop.
+    // Create a simple Win32 window and run the message loop.
+    ui.createSimpleWindow();
+}
+
+pub export fn OnShowModelsRequest() callconv(.c) void {
+    models_feature.showModelsOfflineFirst(std.heap.page_allocator);
 }

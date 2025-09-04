@@ -30,6 +30,8 @@ pub fn build(b: *std.Build) void {
         .files = &.{
             "src/libc/c_functions.c",
             "src/platform/win32/win32_ui.c",
+            "src/platform/win32/win_http.c",
+            "src/platform/win32/win_secret.c",
         },
         .flags = &.{"-Iinc"},
     });
@@ -38,6 +40,8 @@ pub fn build(b: *std.Build) void {
     exe.linkLibC();
     exe.linkSystemLibrary("user32"); // Window creation, message loop, etc.
     exe.linkSystemLibrary("gdi32"); // Basic text drawing (TextOut)
+    exe.linkSystemLibrary("wininet"); // WinINet for HTTP GET
+    exe.linkSystemLibrary("crypt32"); // DPAPI (CryptProtectData)
     // exe.linkSystemLibrary("kernel32"); // Not required explicitly here
 
     // Optional named Zig modules to make future imports cleaner

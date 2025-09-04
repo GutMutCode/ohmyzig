@@ -5,7 +5,7 @@ This document explains how the current codebase creates and runs a basic Win32 G
 
 Call Flow
 ---------
-- `src/main.zig` calls `c.CreateSimpleWindow()` (imported via `@cImport`).
+- `src/main.zig` calls `ui.createSimpleWindow()` (Zig adapter over Win32 C).
 - `src/platform/win32/win32_ui.c` registers a window class, creates a window, shows it, and runs the message loop.
 - `WndProc` handles messages such as `WM_PAINT` and `WM_DESTROY`.
 
@@ -75,4 +75,3 @@ Linked Libraries
 - `user32`: window creation, message pump, cursors, icons, message boxes, etc.
 - `gdi32`: drawing text and simple 2D rendering (e.g., `TextOutA`).
 - See `build-and-linking.md` for how these are linked in `build.zig`.
-

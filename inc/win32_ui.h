@@ -12,6 +12,22 @@ extern "C" {
 // message loop. Returns the process exit code when the loop exits.
 int CreateSimpleWindow(void);
 
+// Shows an informational message box with the given title and body.
+void ShowInfoMessage(const char* title, const char* body);
+
+// Shows a scrollable, read-only dialog with the given title and body text.
+// Intended for long, multi-line content like model lists.
+void ShowScrollableText(const char* title, const char* body);
+
+// Sets the main window's read-only text area content (multiline).
+void SetMainText(const char* body);
+
+// Prompts the user for the OpenAI API key using a simple modal input window.
+// Writes a null-terminated string into out_buf (up to out_buf_len-1 chars).
+// out_save receives 1 if user checked "Save key (encrypted)", else 0.
+// Returns 1 on success (OK), 0 on cancel or error.
+int PromptForApiKey(char* out_buf, int out_buf_len, int* out_save);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
