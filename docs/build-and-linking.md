@@ -36,11 +36,15 @@ Zig ↔ C Interop
 
 Named Zig Modules
 -----------------
-- The build registers a named module `openai` for API helpers:
-  - Registration in `build.zig`:
+- The build registers named modules for API helpers:
+  - OpenAI:
     - `const openai_mod = b.addModule("openai", .{ .root_source_file = b.path("src/openai/mod.zig"), ... });`
     - `exe.root_module.addImport("openai", openai_mod);`
-  - Usage from Zig: `const openai = @import("openai");`
+    - Usage: `const openai = @import("openai");`
+  - Gemini:
+    - `const gemini_mod = b.addModule("gemini", .{ .root_source_file = b.path("src/gemini/mod.zig"), ... });`
+    - `exe.root_module.addImport("gemini", gemini_mod);`
+    - Usage: `const gemini = @import("gemini");`
 
 Artifacts
 ---------

@@ -52,6 +52,13 @@ pub fn build(b: *std.Build) void {
     });
     exe.root_module.addImport("openai", openai_mod);
 
+    const gemini_mod = b.addModule("gemini", .{
+        .root_source_file = b.path("src/gemini/mod.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.root_module.addImport("gemini", gemini_mod);
+
     // Build as a GUI subsystem app so no console is attached
     exe.subsystem = .Windows;
 
