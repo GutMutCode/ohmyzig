@@ -13,6 +13,10 @@ Layout
   - mod.zig — public entry re-exporting submodules
   - chatgpt.zig — Chat Completions helpers
   - models.zig — Models listing and parsing helpers
+- src/gemini/ — Gemini-related Zig code
+  - mod.zig — public entry re-exporting submodules
+  - generate.zig — Text generation helpers
+  - models.zig — Models listing and parsing helpers
 - src/platform/ — platform adapters and native implementations
   - ui.zig — Win32 UI adapter (message box, API key prompt, create window)
   - http.zig — HTTP adapter (WinINet GET with headers)
@@ -29,7 +33,7 @@ Layout
 
 Build Wiring
 ------------
-- `build.zig` registers the OpenAI module and compiles platform C code.
+- `build.zig` registers the OpenAI and Gemini modules and compiles platform C code.
 - C headers in `inc/` are made available via `exe.addIncludePath`.
 - System libraries linked: `user32`, `gdi32`, `wininet`, `crypt32`.
 

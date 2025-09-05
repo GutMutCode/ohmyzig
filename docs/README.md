@@ -8,4 +8,5 @@ This folder explains the Win32 pieces, the Zig + C build, the platform adapter l
 - build-and-linking.md — How `build.zig` compiles/links Zig + C and selects subsystem.
 - troubleshooting.md — Common pitfalls (e.g., no window appears) and debugging tips.
 - chatgpt.md — Example of calling OpenAI Chat Completions from Zig.
+- gemini.md — Example of calling Gemini API from Zig.
 
